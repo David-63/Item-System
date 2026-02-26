@@ -1,0 +1,16 @@
+{
+    "name": "ItemSystem",
+    "rootNamespace": "Dave6.ItemSystem",
+    "references": [
+        "GUID:f7e608b448e23fa4088ced72a413c234"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,24 @@
+{
+  "name": "com.dave6.item-system",
+  "version": "0.0.1",
+  "displayName": "Dave Item System",
+  "description": "\uc544\uc774\ud15c \uae30\ub2a5.",
+  "unity": "6000.0",
+  "unityRelease": "0",
+  "documentationUrl": "https://github.com/David-63/com.dave6.item-system#readme",
+  "changelogUrl": "https://github.com/David-63/com.dave6.item-system/releases",
+  "licensesUrl": "https://github.com/David-63/com.dave6.item-system/blob/main/LICENSE",
+  "keywords": [
+    "item",
+    "inventory",
+    "modular"
+  ],
+  "author": {
+    "name": "David-63",
+    "url": "https://github.com/David-63",
+    "email": "jiseop.63@gmail.com"
+  },
+  "dependencies": {
+    "com.dave6.foundation": "0.0.2"
+  }
+}
