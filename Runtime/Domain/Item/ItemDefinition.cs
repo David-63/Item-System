@@ -1,38 +1,41 @@
+#nullable enable
 
 using System;
+using System.Collections.Generic;
 using Dave6.Foundation.Math;
 
 namespace Dave6.ItemSystem.Domain.Item
 {
+    // 아이템 카테고리
+    public enum ItemCategory
+    {
+        Armor,
+        Weapon,
+        Consumable,
+        Ammo,
+        Bag,
+        Mod,
+        Misc
+    }
 
     public class ItemDefinition
     {
-        public string displayName { get; }
-        bool isStackable { get; }
-        public int maxStack { get; }
-        public Int2 size { get; }
+        public string DisplayName { get; }
+        public ItemCategory ItemCategory { get; }
+        public Int2 ItemSize { get; }
+        public ItemContainerConfig? ContainerConfig { get; }
+        readonly HashSet<SlotCategory> _EquipableSlots;
+        public IEnumerable<SlotCategory> EquipableSlots => _EquipableSlots;
 
-        public ItemDefinition(string displayName, bool isStackable, int maxStack, Int2 size)
-        {
-            this.displayName = displayName;
-            this.isStackable = isStackable;
-            this.maxStack = isStackable ? Math.Max(1, maxStack) : 1;
-            this.size = size;
-        }
 
-        public bool CanStackWith(ItemDefinition other)
+        public ItemDefinition(string displayName, ItemCategory itemCategory, Int2 itemSize
+        , ItemContainerConfig? containerConfig, IEnumerable<SlotCategory>? equipableSlots)
         {
-            return isStackable && displayName == other.displayName;
-        }
-
-        public bool CanStack() => isStackable;
-        public int ClampStack(int value)
-        {
-            return isStackable ? Math.Clamp(value, 1, maxStack) : 1;
-        }
-        public int GetSpaceLeft(int currentStack)
-        {
-            return isStackable ? maxStack - currentStack : 0;
+            DisplayName = displayName;
+            ItemCategory = itemCategory;
+            ItemSize = itemSize;
+            ContainerConfig = containerConfig;
+            _EquipableSlots = equipableSlots != null ? new HashSet<SlotCategory>(equipableSlots) : new HashSet<SlotCategory>();
         }
     }
 }

@@ -1,33 +1,37 @@
+#nullable enable
 
 using System;
+using Dave6.ItemSystem.Domain.Container;
+using UnityEngine;
 
 namespace Dave6.ItemSystem.Domain.Item
 {
     public class ItemInstance
     {
-        public ItemDefinition definition { get; }
-        public int stack { get; private set; }
+        public ItemDefinition Definition { get; }
+        public IItemContainer? Owner { get; internal set; }
+        public IItemContainer? OwnedContainer { get; }
 
-        public ItemInstance(ItemDefinition definition, int stack = 1)
+        public ItemInstance(ItemDefinition definition)
         {
-            this.definition = definition ?? throw new ArgumentNullException(nameof(definition));
-            this.stack = definition.ClampStack(stack);
+            Definition = definition ?? throw new ArgumentNullException(nameof(definition));
+
+            if (definition.ContainerConfig != null)
+            {
+                OwnedContainer = CreateOwnedContainer(definition);
+                OwnedContainer.SetOwner(this);
+            }
         }
-
-        public int AddStack(int amount)
+        
+        IItemContainer CreateOwnedContainer(ItemDefinition def)
         {
-            if (!definition.CanStack()) return amount;
-            
-            int spaceLeft = definition.GetSpaceLeft(stack);
-            int toAdd = Math.Min(spaceLeft, amount);
-            stack += toAdd;
-
-            return amount - toAdd;
-        }
-
-        public void SetStack(int value)
-        {
-            stack = definition.ClampStack(value);
+            return def.ContainerConfig switch
+            {
+                ItemGridConfig grid => new GridContainer(def.DisplayName + " Container", grid.GridSize),
+                ItemSocketConfig slot => new SocketContainer(def.DisplayName + " Container", slot.AllowedSlots, slot.SocketLayout),
+                null => throw new InvalidOperationException(),
+                _ => throw new InvalidOperationException()
+            };
         }
     }
 }
