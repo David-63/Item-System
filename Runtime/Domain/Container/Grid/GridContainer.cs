@@ -16,7 +16,7 @@ namespace Dave6.ItemSystem.Domain.Container
         {
             ContainerName = containerName;
             _Size = size;
-            _Grid = new ItemInstance[size.x, size.y];
+            _Grid = new ItemInstance[size.X, size.Y];
         }
 
         #region Grid API
@@ -89,9 +89,9 @@ namespace Dave6.ItemSystem.Domain.Container
             var sb = new System.Text.StringBuilder();
             sb.AppendLine($"--- Grid: {ContainerName} ---");
 
-            for (int y = 0; y < _Size.y; y++)
+            for (int y = 0; y < _Size.Y; y++)
             {
-                for (int x = 0; x < _Size.x; x++)
+                for (int x = 0; x < _Size.X; x++)
                 {
                     var item = _Grid[x, y];
 
@@ -126,8 +126,8 @@ namespace Dave6.ItemSystem.Domain.Container
         bool TryFindPlacement(ItemInstance item, bool rotated, out GridPlacement? placement)
         {
             var size = GetItemSize(item, rotated);
-            for (int y = 0; y < _Size.y; y++)
-            for (int x = 0; x < _Size.x; x++)
+            for (int y = 0; y < _Size.Y; y++)
+            for (int x = 0; x < _Size.X; x++)
             {
                 var pos = new Int2(x, y);
                 if (!IsAreaFree(pos, size)) continue;
@@ -143,33 +143,33 @@ namespace Dave6.ItemSystem.Domain.Container
         bool IsAreaFree(Int2 position, Int2 size)
         {
             // 범위 검사
-            if (position.x < 0 || position.y < 0) return false;
-            if (position.x + size.x > _Size.x) return false;
-            if (position.y + size.y > _Size.y) return false;
+            if (position.X < 0 || position.Y < 0) return false;
+            if (position.X + size.X > _Size.X) return false;
+            if (position.Y + size.Y > _Size.Y) return false;
 
             // 충돌 검사
-            for (int y = 0; y < size.y; y++)
-            for (int x = 0; x < size.x; x++)
+            for (int y = 0; y < size.Y; y++)
+            for (int x = 0; x < size.X; x++)
             {
-                if (_Grid[position.x + x, position.y + y] != null) return false;
+                if (_Grid[position.X + x, position.Y + y] != null) return false;
             }
 
             return true;
         }
         void FillGrid(ItemInstance item, Int2 position, Int2 size)
         {
-            for (int y = 0; y < size.y; y++)
-            for (int x = 0; x < size.x; x++)
+            for (int y = 0; y < size.Y; y++)
+            for (int x = 0; x < size.X; x++)
             {
-                _Grid[position.x + x, position.y + y] = item;
+                _Grid[position.X + x, position.Y + y] = item;
             }
         }
         void ClearGrid(Int2 position, Int2 size)
         {
-            for (int x = 0; x < size.x; x++)
-            for (int y = 0; y < size.y; y++)
+            for (int x = 0; x < size.X; x++)
+            for (int y = 0; y < size.Y; y++)
             {
-                _Grid[position.x + x, position.y + y] = null;
+                _Grid[position.X + x, position.Y + y] = null;
             }
         }
 
@@ -179,7 +179,7 @@ namespace Dave6.ItemSystem.Domain.Container
 
             if (!rotated) return original;
 
-            return new Int2(original.y, original.x);
+            return new Int2(original.Y, original.X);
         }
         #endregion
     }

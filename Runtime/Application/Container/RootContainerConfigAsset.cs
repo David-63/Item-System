@@ -1,9 +1,7 @@
 #nullable enable
 
 using System.Collections.Generic;
-using Dave6.ItemSystem.Application.Controller;
 using Dave6.ItemSystem.Domain.Container;
-using Dave6.ItemSystem.Domain.Item;
 using UnityEngine;
 
 namespace Dave6.ItemSystem.Application.Container
@@ -13,7 +11,7 @@ namespace Dave6.ItemSystem.Application.Container
     {
         [SerializeField] List<RootContainerDefinition> _RootContainers = new();
 
-        public StashContext CreateContext()
+        public RootContainerContext CreateContext()
         {
             var containers = new Dictionary<RootContainerRole, IItemContainer>();
 
@@ -35,7 +33,7 @@ namespace Dave6.ItemSystem.Application.Container
                 }
             }
 
-            return new StashContext(containers);
+            return new RootContainerContext(containers);
         }
     }
 }
