@@ -20,6 +20,7 @@ namespace Dave6.ItemSystem.Domain.Item
 
     public class ItemDefinition
     {
+        public string ItemId { get;}
         public string DisplayName { get; }
         public ItemCategory ItemCategory { get; }
         public Int2 ItemSize { get; }
@@ -28,9 +29,10 @@ namespace Dave6.ItemSystem.Domain.Item
         public IEnumerable<SlotCategory> EquipableSlots => _EquipableSlots;
 
 
-        public ItemDefinition(string displayName, ItemCategory itemCategory, Int2 itemSize
+        public ItemDefinition(string itemId, string displayName, ItemCategory itemCategory, Int2 itemSize
         , ItemContainerConfig? containerConfig, IEnumerable<SlotCategory>? equipableSlots)
         {
+            ItemId = itemId;
             DisplayName = displayName;
             ItemCategory = itemCategory;
             ItemSize = itemSize;

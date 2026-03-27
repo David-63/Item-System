@@ -19,5 +19,7 @@ namespace Dave6.ItemSystem.Domain.Container
         bool CanAdd(ItemInstance item, ItemPlacement context);
         bool TryAdd(ItemInstance item, ItemPlacement context);
         bool TryRemove(ItemInstance item);
+
+        bool IsEmpty() => Items.Count == 0;
     }
 }

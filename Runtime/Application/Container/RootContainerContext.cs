@@ -11,6 +11,14 @@ namespace Dave6.ItemSystem.Application.Container
 
         public bool TryGetRoot(RootContainerRole role, out IItemContainer container) => _RootContainer.TryGetValue(role, out container);
         public IEnumerable<IItemContainer> GetRootContainers() => _RootContainer.Values;
+
+        public IEnumerable<(RootContainerRole, IItemContainer)> GetAll()
+        {
+            foreach (var kv in _RootContainer)
+            {
+                yield return (kv.Key, kv.Value);
+            }
+        }
     }
 }
 
