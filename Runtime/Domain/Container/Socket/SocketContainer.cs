@@ -1,7 +1,9 @@
 #nullable enable
 
 using System.Collections.Generic;
+using Dave6.Foundation.Math;
 using Dave6.ItemSystem.Domain.Item;
+using UnityEngine;
 
 namespace Dave6.ItemSystem.Domain.Container
 {
@@ -16,21 +18,24 @@ namespace Dave6.ItemSystem.Domain.Container
             ContainerName = containerName;
             SocketLayout = socketLayout;
 
-            var typeCount = new Dictionary<SlotCategory, int>();
+            //var typeCount = new Dictionary<SlotCategory, int>();
+
+            int localId = 0;
 
             foreach (var type in slotCategories)
             {
-                if (!typeCount.ContainsKey(type)) typeCount[type] = 0;
-                int index = typeCount[type]++;
-                _SocketSlots.Add(new SocketSlot(type, index));
+                //if (!typeCount.ContainsKey(type)) typeCount[type] = 0;
+                //int index = typeCount[type]++;
+                _SocketSlots.Add(new SocketSlot(type, localId++));
             }
         }
+
         public override ItemPlacement? GetPlacement(ItemInstance item)
         {
             var slot = FindSlot(item);
             if (slot == null) return null;
 
-            return new SlotPlacement(slot.SlotIndex);
+            return new SoketPlacement(slot.SlotId);
         }
         public override bool CanAdd(ItemInstance item)
         {
@@ -42,14 +47,30 @@ namespace Dave6.ItemSystem.Domain.Container
             }
             return false;
         }
-        public override bool CanAdd(ItemInstance item, ItemPlacement context)
+        public override bool CanAdd(ItemInstance item, ItemPlacement placement)
         {
-            if (context is not SlotPlacement sp) return false;
-            if (sp.SlotIndex < 0 || sp.SlotIndex >= _SocketSlots.Count) return false;
+            if (placement is not SoketPlacement sp)
+            {
+                Debug.Log("타입 불일치");
+                return false;
+            }
+            if (sp.SlotId < 0 || sp.SlotId >= _SocketSlots.Count)
+            {
+                Debug.Log("슬롯 인덱스 범위 벗어남");
+                return false;
+            }
 
-            var slot = _SocketSlots[sp.SlotIndex];
-            if (!slot.IsEmpty()) return false;
-            if (!slot.CanEquip(item)) return false;
+            var slot = _SocketSlots[sp.SlotId];
+            if (!slot.IsEmpty())
+            {
+                Debug.Log("슬롯이 이미 차있음");
+                return false;
+            }
+            if (!slot.CanEquip(item))
+            {
+                Debug.Log("장착 불가능한 아이템");
+                return false;
+            }
 
             return true;
         }
@@ -60,16 +81,16 @@ namespace Dave6.ItemSystem.Domain.Container
                 if (!slot.IsEmpty()) continue;
                 if (!slot.CanEquip(item)) continue;
 
-                return TryAdd(item, new SlotPlacement(slot.SlotIndex));
+                return TryAdd(item, new SoketPlacement(slot.SlotId));
             }
             return false;
         }
-        public override bool TryAdd(ItemInstance item, ItemPlacement context)
+        public override bool TryAdd(ItemInstance item, ItemPlacement placement)
         {
-            if (context is not SlotPlacement sp) return false;
-            if (!CanAdd(item, context)) return false;
+            if (placement is not SoketPlacement sp) return false;
+            if (!CanAdd(item, placement)) return false;
 
-            var slot = _SocketSlots[sp.SlotIndex];
+            var slot = _SocketSlots[sp.SlotId];
             if (!base.TryAdd(item)) return false;
             slot.SetItem(item);
 

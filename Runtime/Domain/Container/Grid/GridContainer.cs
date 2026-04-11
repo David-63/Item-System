@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using Dave6.Foundation.Math;
 using Dave6.ItemSystem.Domain.Item;
+using UnityEngine;
 
 namespace Dave6.ItemSystem.Domain.Container
 {
@@ -66,7 +67,11 @@ namespace Dave6.ItemSystem.Domain.Container
         }
         public override bool CanAdd(ItemInstance item, ItemPlacement context)
         {
-            if (context is not GridPlacement gp) return false;
+            if (context is not GridPlacement gp)
+            {
+                Debug.Log("Grid Placement 타입 불일치");
+                return false;
+            }
             var size = GetItemSize(item, gp.Rotated);
             return IsAreaFree(gp.Position, size);
         }
@@ -142,6 +147,8 @@ namespace Dave6.ItemSystem.Domain.Container
         // Grid Logic
         bool IsAreaFree(Int2 position, Int2 size)
         {
+            // 자기 자신이랑 충돌하는지 체크
+            
             // 범위 검사
             if (position.X < 0 || position.Y < 0) return false;
             if (position.X + size.X > _Size.X) return false;

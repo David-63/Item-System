@@ -1,6 +1,7 @@
 #nullable enable
 
 using System.Collections.Generic;
+using Dave6.Foundation.Math;
 using Dave6.ItemSystem.Domain.Item;
 
 namespace Dave6.ItemSystem.Domain.Container
@@ -10,6 +11,8 @@ namespace Dave6.ItemSystem.Domain.Container
         string? ContainerName { get; }
         ItemInstance? Owner { get; }                 // 트리 구조 가능
         IReadOnlyCollection<ItemInstance> Items { get; }
+        bool IsDirty { get; }
+        void ClearDirty();
 
         void SetOwner(ItemInstance? parent);
         ItemPlacement? GetPlacement(ItemInstance item);

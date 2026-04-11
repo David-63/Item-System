@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Dave6.ItemSystem.Application.Container;
 using Dave6.ItemSystem.Application.Item;
+using Dave6.ItemSystem.Application.Mapper;
 using Dave6.ItemSystem.Domain.Container;
 using Dave6.ItemSystem.Domain.Item;
 using Dave6.ItemSystem.Persistence.Dto;
@@ -25,7 +26,7 @@ namespace Dave6.ItemSystem.Persistence.Mapper
 
 
         #region Export (Domain -> DTO)
-        public SaveData ExportLoadout(RootContainerContext context)
+        public SaveData ExportLoadout(LoadoutRootContext context)
         {
             // 데이터 초기화
             _SaveData = new SaveData
@@ -39,7 +40,7 @@ namespace Dave6.ItemSystem.Persistence.Mapper
             _ContainerIds.Clear();
 
             // Root container 등록
-            foreach (var (role, container) in context.GetAll())
+            foreach (var (role, container) in context.GetRootContainerPairs())
             {
                 if (role == RootContainerRole.Loot) continue;
 
@@ -123,7 +124,7 @@ namespace Dave6.ItemSystem.Persistence.Mapper
                 ContainerId = containerId,
                 Position = placement is GridPlacement gp ? gp.Position : default,
                 Rotated = placement is GridPlacement gp2 && gp2.Rotated,
-                SlotIndex = placement is SlotPlacement sp ? sp.SlotIndex : -1
+                SlotIndex = placement is SoketPlacement sp ? sp.SlotId : -1
             });
         }
 
@@ -140,13 +141,13 @@ namespace Dave6.ItemSystem.Persistence.Mapper
         #endregion
         #region Import (DTO -> Domain)
 
-        public void ImportLoadout(RootContainerContext context, SaveData saveData)
+        public void ImportLoadout(ILoadoutProvider provider, SaveData saveData)
         {
             _ItemDict.Clear();
             _ContainerDict.Clear();
 
             // context 맵핑
-            foreach (var (role, container)in context.GetAll())
+            foreach (var (role, container) in provider.GetContext().GetRootContainerPairs())
             {
                 string id = role.ToString();
                 _ContainerDict[id] = container;
@@ -167,7 +168,7 @@ namespace Dave6.ItemSystem.Persistence.Mapper
                 var item = _ItemDict[pDto.ItemInstanceId];
                 var container = _ContainerDict[pDto.ContainerId];
 
-                container.TryAdd(item, CreatePlacement(pDto));
+                provider.Add(item, container, CreatePlacement(pDto));
             }
         }
 
@@ -178,7 +179,7 @@ namespace Dave6.ItemSystem.Persistence.Mapper
         }
         ItemPlacement CreatePlacement(ItemPlaceDto placementDto)
         {
-            if (placementDto.SlotIndex >= 0) return new SlotPlacement(placementDto.SlotIndex);
+            if (placementDto.SlotIndex >= 0) return new SoketPlacement(placementDto.SlotIndex);
             return new GridPlacement(placementDto.Position, placementDto.Rotated);
         }
 

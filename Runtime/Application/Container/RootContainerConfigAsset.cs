@@ -11,7 +11,7 @@ namespace Dave6.ItemSystem.Application.Container
     {
         [SerializeField] List<RootContainerDefinition> _RootContainers = new();
 
-        public RootContainerContext CreateContext()
+        public LoadoutRootContext CreateContext()
         {
             var containers = new Dictionary<RootContainerRole, IItemContainer>();
 
@@ -33,7 +33,7 @@ namespace Dave6.ItemSystem.Application.Container
                 }
             }
 
-            return new RootContainerContext(containers);
+            return new LoadoutRootContext(containers);
         }
     }
 }

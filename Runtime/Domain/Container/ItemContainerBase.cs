@@ -1,6 +1,7 @@
 #nullable enable
 
 using System.Collections.Generic;
+using Dave6.Foundation.Math;
 using Dave6.ItemSystem.Domain.Item;
 
 namespace Dave6.ItemSystem.Domain.Container
@@ -9,9 +10,10 @@ namespace Dave6.ItemSystem.Domain.Container
     {
         public string? ContainerName { get; protected set; }
         protected readonly List<ItemInstance> _Items = new();
-        public ItemInstance? Owner { get; protected set; }
         public IReadOnlyCollection<ItemInstance> Items => _Items;
 
+
+        public ItemInstance? Owner { get; protected set; }
         public void SetOwner(ItemInstance? owner) => Owner = owner;
 
         public abstract ItemPlacement? GetPlacement(ItemInstance item);
@@ -21,6 +23,7 @@ namespace Dave6.ItemSystem.Domain.Container
             if (_Items.Contains(item)) return false;
             _Items.Add(item);
             item.Owner = this;
+            _IsDirty = true;
             return true;
         }
 
@@ -33,7 +36,12 @@ namespace Dave6.ItemSystem.Domain.Container
         {
             if (!_Items.Remove(item)) return false;
             item.Owner = null;
+            _IsDirty = true;
             return true;
         }
+
+        protected bool _IsDirty = false;
+        public bool IsDirty => _IsDirty;
+        public void ClearDirty() => _IsDirty = false;
     }
 }

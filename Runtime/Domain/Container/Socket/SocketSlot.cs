@@ -8,13 +8,13 @@ namespace Dave6.ItemSystem.Domain.Container
     public class SocketSlot
     {
         public SlotCategory SlotCategory { get; }
-        public int SlotIndex { get; }
+        public int SlotId { get; }
         public ItemInstance? Item { get; private set; }
 
-        public SocketSlot(SlotCategory category, int index)
+        public SocketSlot(SlotCategory category, int id)
         {
             SlotCategory = category;
-            SlotIndex = index;
+            SlotId = id;
         }
 
         public bool IsEmpty() => Item == null;
