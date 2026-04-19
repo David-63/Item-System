@@ -2,7 +2,6 @@
 
 using System;
 using Dave6.ItemSystem.Domain.Container;
-using UnityEngine;
 
 namespace Dave6.ItemSystem.Domain.Item
 {

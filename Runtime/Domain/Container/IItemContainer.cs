@@ -1,7 +1,6 @@
 #nullable enable
 
 using System.Collections.Generic;
-using Dave6.Foundation.Math;
 using Dave6.ItemSystem.Domain.Item;
 
 namespace Dave6.ItemSystem.Domain.Container

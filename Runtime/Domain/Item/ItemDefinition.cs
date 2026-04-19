@@ -1,6 +1,5 @@
 #nullable enable
 
-using System;
 using System.Collections.Generic;
 using Dave6.Foundation.Math;
 
@@ -27,7 +26,6 @@ namespace Dave6.ItemSystem.Domain.Item
         public ItemContainerConfig? ContainerConfig { get; }
         readonly HashSet<SlotCategory> _EquipableSlots;
         public IEnumerable<SlotCategory> EquipableSlots => _EquipableSlots;
-
 
         public ItemDefinition(string itemId, string displayName, ItemCategory itemCategory, Int2 itemSize
         , ItemContainerConfig? containerConfig, IEnumerable<SlotCategory>? equipableSlots)

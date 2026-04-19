@@ -1,9 +1,7 @@
 #nullable enable
 
 using System.Collections.Generic;
-using Dave6.Foundation.Math;
 using Dave6.ItemSystem.Domain.Item;
-using UnityEngine;
 
 namespace Dave6.ItemSystem.Domain.Container
 {
@@ -18,14 +16,10 @@ namespace Dave6.ItemSystem.Domain.Container
             ContainerName = containerName;
             SocketLayout = socketLayout;
 
-            //var typeCount = new Dictionary<SlotCategory, int>();
-
             int localId = 0;
 
             foreach (var type in slotCategories)
             {
-                //if (!typeCount.ContainsKey(type)) typeCount[type] = 0;
-                //int index = typeCount[type]++;
                 _SocketSlots.Add(new SocketSlot(type, localId++));
             }
         }
@@ -51,24 +45,24 @@ namespace Dave6.ItemSystem.Domain.Container
         {
             if (placement is not SoketPlacement sp)
             {
-                Debug.Log("타입 불일치");
+                //Debug.Log("타입 불일치");
                 return false;
             }
             if (sp.SlotId < 0 || sp.SlotId >= _SocketSlots.Count)
             {
-                Debug.Log("슬롯 인덱스 범위 벗어남");
+                //Debug.Log("슬롯 인덱스 범위 벗어남");
                 return false;
             }
 
             var slot = _SocketSlots[sp.SlotId];
             if (!slot.IsEmpty())
             {
-                Debug.Log("슬롯이 이미 차있음");
+                //Debug.Log("슬롯이 이미 차있음");
                 return false;
             }
             if (!slot.CanEquip(item))
             {
-                Debug.Log("장착 불가능한 아이템");
+                //Debug.Log("장착 불가능한 아이템");
                 return false;
             }
 

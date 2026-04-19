@@ -13,7 +13,7 @@ namespace Dave6.ItemSystem.Persistence.Mapper
 {
     public class LoadoutService
     {
-        ItemDatabase _ItemDatabase;
+        IItemFactory _ItemFactory;
 
         Dictionary<ItemInstance, string> _ItemIds = new();
         Dictionary<IItemContainer, string> _ContainerIds = new();
@@ -22,7 +22,7 @@ namespace Dave6.ItemSystem.Persistence.Mapper
         Dictionary<string, IItemContainer> _ContainerDict = new();
         SaveData _SaveData;
 
-        public LoadoutService(ItemDatabase database) => _ItemDatabase = database;
+        public LoadoutService(IItemFactory factory) => _ItemFactory = factory;
 
 
         #region Export (Domain -> DTO)
@@ -156,7 +156,7 @@ namespace Dave6.ItemSystem.Persistence.Mapper
             // item 생성
             foreach (var iDto in saveData.Items)
             {
-                ItemInstance item = CreateItem(iDto);
+                ItemInstance item = CreateItemInstace(iDto);
                 _ItemDict[iDto.ItemInstanceId] = item;
 
                 if (item.OwnedContainer == null || iDto.OwnedContainerId == null) continue;
@@ -172,10 +172,9 @@ namespace Dave6.ItemSystem.Persistence.Mapper
             }
         }
 
-        ItemInstance CreateItem(ItemDto itemDto)
+        ItemInstance CreateItemInstace(ItemDto itemDto)
         {
-            var definition = _ItemDatabase.GetDefinition(itemDto.ItemDefinitionId);
-            return new ItemInstance(definition);
+            return _ItemFactory.CreateInstance(itemDto.ItemDefinitionId);
         }
         ItemPlacement CreatePlacement(ItemPlaceDto placementDto)
         {
