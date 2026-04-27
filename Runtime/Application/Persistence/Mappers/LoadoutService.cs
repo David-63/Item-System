@@ -40,20 +40,18 @@ namespace Dave6.ItemSystem.Persistence.Mapper
             _ContainerIds.Clear();
 
             // Root container 등록
-            foreach (var (role, container) in context.GetRootContainerPairs())
-            {
-                if (role == RootContainerRole.Loot) continue;
+            // foreach (var (role, container) in context.GetRootContainerPairs())
+            // {
+            //     string containerId = role.ToString();   // guid 대신 고정된 키 사용
+            //     _ContainerIds[container] = containerId;
 
-                string containerId = role.ToString();   // guid 대신 고정된 키 사용
-                _ContainerIds[container] = containerId;
-
-                _SaveData.Containers.Add(new ContainerDto
-                {
-                    ContainerId = containerId,
-                    ContainerType = ResolveType(container)
-                });
-                ExportContainer(container);
-            }
+            //     _SaveData.Containers.Add(new ContainerDto
+            //     {
+            //         ContainerId = containerId,
+            //         ContainerType = ResolveType(container)
+            //     });
+            //     ExportContainer(container);
+            // }
 
             return _SaveData;
         }
@@ -100,18 +98,19 @@ namespace Dave6.ItemSystem.Persistence.Mapper
             _ItemIds[item] = itemId;
 
             // 내부 컨테이너 재귀 호출
-            string ownedContainerId = null;
-            if (item.OwnedContainer != null)
+            
+            foreach (var container in item.Containers)
             {
-                ExportContainer(item.OwnedContainer);
-                ownedContainerId = _ContainerIds[item.OwnedContainer];
+                string ownedContainerId = null;
+                ExportContainer(container);
+                ownedContainerId = _ContainerIds[container];
+                _SaveData.Items.Add(new ItemDto
+                {
+                    ItemInstanceId = itemId,
+                    ItemDefinitionId = item.Definition.ItemId.ToString(),
+                    OwnedContainerId = ownedContainerId
+                });
             }
-            _SaveData.Items.Add(new ItemDto
-            {
-                ItemInstanceId = itemId,
-                ItemDefinitionId = item.Definition.ItemId.ToString(),
-                OwnedContainerId = ownedContainerId
-            });
         }
         /// <summary>
         /// 아이템 배치정보 저장
@@ -124,7 +123,7 @@ namespace Dave6.ItemSystem.Persistence.Mapper
                 ContainerId = containerId,
                 Position = placement is GridPlacement gp ? gp.Position : default,
                 Rotated = placement is GridPlacement gp2 && gp2.Rotated,
-                SlotIndex = placement is SoketPlacement sp ? sp.SlotId : -1
+                SlotIndex = placement is SocketPlacement sp ? sp.SlotId : -1
             });
         }
 
@@ -147,29 +146,29 @@ namespace Dave6.ItemSystem.Persistence.Mapper
             _ContainerDict.Clear();
 
             // context 맵핑
-            foreach (var (role, container) in provider.GetContext().GetRootContainerPairs())
-            {
-                string id = role.ToString();
-                _ContainerDict[id] = container;
-                //container.Clear();                // 컨테이너 내부 초기화 기능이 필요하면 추가하기
-            }
-            // item 생성
-            foreach (var iDto in saveData.Items)
-            {
-                ItemInstance item = CreateItemInstace(iDto);
-                _ItemDict[iDto.ItemInstanceId] = item;
+            // foreach (var (role, container) in provider.GetContext().GetRootContainerPairs())
+            // {
+            //     string id = role.ToString();
+            //     _ContainerDict[id] = container;
+            //     //container.Clear();                // 컨테이너 내부 초기화 기능이 필요하면 추가하기
+            // }
+            // // item 생성 (아이템의 복수 컨테이너 구조는 미완)
+            // foreach (var iDto in saveData.Items)
+            // {
+            //     ItemInstance item = CreateItemInstace(iDto);
+            //     _ItemDict[iDto.ItemInstanceId] = item;
 
-                if (item.OwnedContainer == null || iDto.OwnedContainerId == null) continue;
-                _ContainerDict[iDto.OwnedContainerId] = item.OwnedContainer;
-            }
-            // placement 적용
-            foreach (var pDto in saveData.Placements)
-            {
-                var item = _ItemDict[pDto.ItemInstanceId];
-                var container = _ContainerDict[pDto.ContainerId];
+            //     if (iDto.OwnedContainerId == null) continue;
+            //     //_ContainerDict[iDto.OwnedContainerId] = item.OwnedContainer;
+            // }
+            // // placement 적용
+            // foreach (var pDto in saveData.Placements)
+            // {
+            //     var item = _ItemDict[pDto.ItemInstanceId];
+            //     var container = _ContainerDict[pDto.ContainerId];
 
-                provider.Add(item, container, CreatePlacement(pDto));
-            }
+            //     provider.Add(item, container, CreatePlacement(pDto));
+            // }
         }
 
         ItemInstance CreateItemInstace(ItemDto itemDto)
@@ -178,7 +177,7 @@ namespace Dave6.ItemSystem.Persistence.Mapper
         }
         ItemPlacement CreatePlacement(ItemPlaceDto placementDto)
         {
-            if (placementDto.SlotIndex >= 0) return new SoketPlacement(placementDto.SlotIndex);
+            if (placementDto.SlotIndex >= 0) return new SocketPlacement(placementDto.SlotIndex);
             return new GridPlacement(placementDto.Position, placementDto.Rotated);
         }
 

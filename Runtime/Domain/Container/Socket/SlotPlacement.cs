@@ -2,9 +2,9 @@
 
 namespace Dave6.ItemSystem.Domain.Container
 {
-    public class SoketPlacement : ItemPlacement
+    public class SocketPlacement : ItemPlacement
     {
         public int SlotId { get; }
-        public SoketPlacement(int slotId) => SlotId = slotId;
+        public SocketPlacement(int slotId) => SlotId = slotId;
     }
 }

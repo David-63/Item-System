@@ -1,34 +1,43 @@
 using System;
 using Dave6.ItemSystem.Domain.Container;
 using Dave6.ItemSystem.Domain.Item;
+using UnityEngine;
 
 namespace Dave6.ItemSystem.Application.Container
 {
     public class ContainerService
     {
+        /// <summary>
+        /// 사운드, 로그, 이펙트 같은 트리거에 사용
+        /// </summary>
         public event Action<ContainerAction> OnActionExecuted;
-        public ContainerResult Move(LoadoutRootContext ctx, ItemInstance item, IItemContainer target, ItemPlacement placement)
+        public ContainerResult Move(ItemInstance item, IItemContainer target, ItemPlacement placement)
         {
+            // 널 체크
             if (item == null) return ContainerResult.Fail(ContainerError.InvalidItem);
             if (target == null) return ContainerResult.Fail(ContainerError.InvalidTarget);
 
             var source = item.Owner;
             if (source == null) return ContainerResult.Fail(ContainerError.NoSource);
+            if (IsSelfOrDescendant(item, target)) return ContainerResult.Fail(ContainerError.InvalidTarget);
 
             var originalPlacement = source.GetPlacement(item);
 
-            if (!source.TryRemove(item)) return ContainerResult.Fail(ContainerError.RemoveFailed);
-            if (!target.CanAdd(item, placement))
+            // 기존 삭제
+            var removed = source.TryRemove(item);
+            if (!removed.Success) return ContainerResult.Fail(ContainerError.RemoveFailed);
+
+            var canAdd = target.CanAdd(item, placement);
+            if (!canAdd.Success)
             {
                 // 롤백
                 source.TryAdd(item, originalPlacement);
                 return ContainerResult.Fail(ContainerError.CannotAdd);
             }
 
-
-            if (!target.TryAdd(item, placement))
+            var added = target.TryAdd(item, placement);
+            if (!added.Success)
             {
-                // 롤백
                 source.TryAdd(item, originalPlacement);
                 return ContainerResult.Fail(ContainerError.AddFailed);
             }
@@ -45,23 +54,45 @@ namespace Dave6.ItemSystem.Application.Container
 
             // 이벤트 발생
             OnActionExecuted?.Invoke(action);
-            ctx.NotifyItemMoved(item, target);
 
-            return ContainerResult.Ok();
+            return ContainerResult.Ok(action);
+        }
+        public ContainerResult Add(ItemInstance item, ContainerCollection collection)
+        {
+            if (item == null) return ContainerResult.Fail(ContainerError.InvalidItem);
+            if (collection == null) return ContainerResult.Fail(ContainerError.InvalidTarget);
+
+            // 모든 후보 순회
+            foreach (var container in collection.AllContainers)
+            {
+                Debug.Log($"Try Container: {container}");
+
+                var canAdd = container.CanAdd(item);
+                Debug.Log($"CanAdd: {canAdd.Success} / {canAdd.Error}");
+                if (!canAdd.Success) continue;
+
+                // 성공시 기존로직 재사용
+                return Add(item, container);
+            }
+            return ContainerResult.Fail(ContainerError.AddFailed);
         }
 
-        public ContainerResult Add(LoadoutRootContext ctx, ItemInstance item, IItemContainer target, ItemPlacement placement = null)
+        public ContainerResult Add(ItemInstance item, IItemContainer target, ItemPlacement placement = null)
         {
             if (item == null) return ContainerResult.Fail(ContainerError.InvalidItem);
             if (target == null) return ContainerResult.Fail(ContainerError.InvalidTarget);
 
-            bool canAdd = placement == null ? target.CanAdd(item) : target.CanAdd(item, placement);
+            if (IsSelfOrDescendant(item, target)) return ContainerResult.Fail(ContainerError.InvalidTarget);
 
-            if (!canAdd) return ContainerResult.Fail(ContainerError.CannotAdd);
+            ContainerResult canAdd;
+            if (placement == null) canAdd = target.CanAdd(item);
+            else canAdd = target.CanAdd(item, placement);
+            if (!canAdd.Success) return ContainerResult.Fail(ContainerError.CannotAdd);
 
-            bool added = placement == null ? target.TryAdd(item) : target.TryAdd(item, placement);
-
-            if (!added) return ContainerResult.Fail(ContainerError.AddFailed);
+            ContainerResult added;
+            if (placement == null) added = target.TryAdd(item);
+            else added = target.TryAdd(item, placement);
+            if (!added.Success) return ContainerResult.Fail(ContainerError.AddFailed);
 
             var action = new ContainerAction
             {
@@ -73,12 +104,11 @@ namespace Dave6.ItemSystem.Application.Container
             };
 
             OnActionExecuted?.Invoke(action);
-            ctx.NotifyItemAdded(item, target);
 
-            return ContainerResult.Ok();
+            return ContainerResult.Ok(action);
         }
 
-        public ContainerResult Remove(LoadoutRootContext ctx, ItemInstance item)
+        public ContainerResult Remove(ItemInstance item)
         {
             if (item == null) return ContainerResult.Fail(ContainerError.InvalidItem);
 
@@ -87,7 +117,8 @@ namespace Dave6.ItemSystem.Application.Container
 
             var placement = source.GetPlacement(item);
 
-            if (!source.TryRemove(item)) return ContainerResult.Fail(ContainerError.RemoveFailed);
+            var removed = source.TryRemove(item);
+            if (!removed.Success) return ContainerResult.Fail(ContainerError.RemoveFailed);
 
             var action = new ContainerAction
             {
@@ -99,26 +130,27 @@ namespace Dave6.ItemSystem.Application.Container
             };
 
             OnActionExecuted?.Invoke(action);
-            ctx.NotifyItemRemoved(item);
 
-            return ContainerResult.Ok();
+            return ContainerResult.Ok(action);
         }
-    }
 
-    public class ContainerAction
-    {
-        public enum ActionType
+        bool IsSelfOrDescendant(ItemInstance item, IItemContainer target)
         {
-            Add,
-            Remove,
-            Move
-        }
+            var current = target;
+            while (current != null)
+            {
+                var ownerItem = current.Owner;
 
-        public ActionType Type;
-        public ItemInstance Item;
-        public IItemContainer From;
-        public IItemContainer To;
-        public ItemPlacement Placement;
+                if (ownerItem == null) break;
+
+                if (ownerItem == item)
+                    return true;
+
+                current = ownerItem.Owner;
+            }
+
+            return false;
+        }
     }
 
 }

@@ -10,27 +10,39 @@ namespace Dave6.ItemSystem.Application.Item
     {
         ItemInstance CreateInstance(string itemId);
     }
+    public class ItemEntry
+    {
+        public ItemDefinitionAsset? ItemDefinitionAsset;
+        public ItemDefinition? ItemDefinition;
+
+        public ItemEntry(ItemDefinitionAsset asset)
+        {
+            ItemDefinitionAsset = asset;
+            ItemDefinition = ItemDefinitionAsset.Create();
+        }
+    }
     public class ItemDatabase
     {
-        Dictionary<string, ItemDefinition> _Definitions = new();
+        Dictionary<string, ItemEntry> _ItemEntries = new();
 
         public ItemDatabase(ItemDatabaseAsset asset)
         {
-            _Definitions = new Dictionary<string, ItemDefinition>();
-            foreach (var defAsset in asset.Definitions)
+            _ItemEntries = new();
+            foreach (var defAsset in asset.DefinitionAssets)
             {
-                var def = defAsset.Create();
-                _Definitions[def.ItemId] = def;
+                var id = defAsset.ItemID;
+                _ItemEntries[id] = new ItemEntry(defAsset);
             }
+            
         }
 
-        public ItemDefinition? GetDefinition(string itemId)
+        public ItemEntry? GetItemEntry(string itemId)
         {
-            if (!_Definitions.TryGetValue(itemId, out var def))
+            if (!_ItemEntries.TryGetValue(itemId, out var itemEntry))
             {
                 throw new Exception($"ItemDefinition not found: {itemId}");
             }
-            return def;
+            return itemEntry;
         }
     }
 }

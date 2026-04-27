@@ -11,6 +11,6 @@ namespace Dave6.ItemSystem.Application.Item
     public class ItemDatabaseAsset : ScriptableObject
     {
         [SerializeField] List<ItemDefinitionAsset> _DefinitionAssets = new();
-        public IReadOnlyList<ItemDefinitionAsset> Definitions => _DefinitionAssets;
+        public IReadOnlyList<ItemDefinitionAsset> DefinitionAssets => _DefinitionAssets;
     }
 }

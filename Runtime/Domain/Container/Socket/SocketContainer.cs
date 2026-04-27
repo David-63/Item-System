@@ -1,12 +1,15 @@
 #nullable enable
 
 using System.Collections.Generic;
+using Dave6.ItemSystem.Application.Container;
 using Dave6.ItemSystem.Domain.Item;
 
 namespace Dave6.ItemSystem.Domain.Container
 {
     public class SocketContainer : ItemContainerBase
     {
+        protected override ContainerLayout _Layout => ContainerLayout.Socket;
+
         readonly List<SocketSlot> _SocketSlots = new();                                    // 슬롯 상태
         public IReadOnlyList<SocketSlot> SocketSlots => _SocketSlots;
         public SocketLayout SocketLayout { get; }
@@ -24,83 +27,104 @@ namespace Dave6.ItemSystem.Domain.Container
             }
         }
 
+        #region Socket API
         public override ItemPlacement? GetPlacement(ItemInstance item)
         {
             var slot = FindSlot(item);
             if (slot == null) return null;
 
-            return new SoketPlacement(slot.SlotId);
+            return new SocketPlacement(slot.SlotId);
         }
-        public override bool CanAdd(ItemInstance item)
+
+        public override ContainerResult CanAdd(ItemInstance item)
         {
+            if (item == null) return ContainerResult.Fail(ContainerError.InvalidItem);
+            if (_Items.Contains(item)) return ContainerResult.Fail(ContainerError.ItemExists);
+
             foreach (var slot in _SocketSlots)
             {
                 if (!slot.IsEmpty()) continue;
                 if (!slot.CanEquip(item)) continue;
-                return true;
+                return ContainerResult.Ok(null!);
             }
-            return false;
+            return ContainerResult.Fail(ContainerError.NoSpaceAvailable);
         }
-        public override bool CanAdd(ItemInstance item, ItemPlacement placement)
+
+        public override ContainerResult CanAdd(ItemInstance item, ItemPlacement? placement)
         {
-            if (placement is not SoketPlacement sp)
+            if (item == null) return ContainerResult.Fail(ContainerError.InvalidItem);
+            if (placement is not SocketPlacement sp)
             {
-                //Debug.Log("타입 불일치");
-                return false;
+                return ContainerResult.Fail(ContainerError.InvalidPlacementType);
             }
+
             if (sp.SlotId < 0 || sp.SlotId >= _SocketSlots.Count)
             {
-                //Debug.Log("슬롯 인덱스 범위 벗어남");
-                return false;
+                return ContainerResult.Fail(ContainerError.NoSpaceAvailable);
             }
 
             var slot = _SocketSlots[sp.SlotId];
             if (!slot.IsEmpty())
             {
-                //Debug.Log("슬롯이 이미 차있음");
-                return false;
-            }
-            if (!slot.CanEquip(item))
-            {
-                //Debug.Log("장착 불가능한 아이템");
-                return false;
+                return ContainerResult.Fail(ContainerError.NoSpaceAvailable);
             }
 
-            return true;
+            if (!slot.CanEquip(item))
+            {
+                return ContainerResult.Fail(ContainerError.CannotAdd);
+            }
+
+            return ContainerResult.Ok(null!);
         }
-        public override bool TryAdd(ItemInstance item)
+
+        public override ContainerResult TryAdd(ItemInstance item)
         {
+            if (item == null) return ContainerResult.Fail(ContainerError.InvalidItem);
+            if (_Items.Contains(item)) return ContainerResult.Fail(ContainerError.ItemExists);
+
             foreach (var slot in _SocketSlots)
             {
                 if (!slot.IsEmpty()) continue;
                 if (!slot.CanEquip(item)) continue;
 
-                return TryAdd(item, new SoketPlacement(slot.SlotId));
+                return TryAdd(item, new SocketPlacement(slot.SlotId));
             }
-            return false;
+            return ContainerResult.Fail(ContainerError.NoSpaceAvailable);
         }
-        public override bool TryAdd(ItemInstance item, ItemPlacement placement)
+
+        public override ContainerResult TryAdd(ItemInstance item, ItemPlacement? placement)
         {
-            if (placement is not SoketPlacement sp) return false;
-            if (!CanAdd(item, placement)) return false;
+            if (item == null) return ContainerResult.Fail(ContainerError.InvalidItem);
+            if (placement is not SocketPlacement sp) return ContainerResult.Fail(ContainerError.InvalidPlacementType);
+            if (_Items.Contains(item)) return ContainerResult.Fail(ContainerError.ItemExists);
+
+            var canAdd = CanAdd(item, placement);
+            if (!canAdd.Success) return canAdd;
 
             var slot = _SocketSlots[sp.SlotId];
-            if (!base.TryAdd(item)) return false;
+            var result = base.TryAdd(item);
+            if (!result.Success) return result;
+
             slot.SetItem(item);
-
-            return true;
+            return result;
         }
-        public override bool TryRemove(ItemInstance item)
+
+        public override ContainerResult TryRemove(ItemInstance item)
         {
+            if (item == null) return ContainerResult.Fail(ContainerError.InvalidItem);
+
             var slot = FindSlot(item);
-            if (slot == null) return false;
+            if (slot == null) return ContainerResult.Fail(ContainerError.InvalidItem);
 
-            if (!base.TryRemove(item)) return false;
+            var result = base.TryRemove(item);
+            if (!result.Success) return result;
+
             slot.Clear();
-
-            return true;
+            return result;
         }
+        #endregion
 
+        #region Inner Logic
         SocketSlot? FindSlot(ItemInstance item)
         {
             foreach (var slot in _SocketSlots)
@@ -109,5 +133,6 @@ namespace Dave6.ItemSystem.Domain.Container
             }
             return null;
         }
+        #endregion
     }
 }

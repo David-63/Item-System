@@ -19,7 +19,14 @@ namespace Dave6.ItemSystem.Domain.Container
 
         public bool IsEmpty() => Item == null;
         public void SetItem(ItemInstance item) => Item = item;
-        public bool CanEquip(ItemInstance item) => item.Definition.EquipableSlots.Contains(SlotCategory);
+        public bool CanEquip(ItemInstance item)
+        {
+            foreach (var descriptor in item.Definition.EquipDescriptors)
+            {
+                if (descriptor.EquipableSlot == SlotCategory) return true;
+            }
+            return false;
+        }
         public void Clear() => Item = null;
     }
 }

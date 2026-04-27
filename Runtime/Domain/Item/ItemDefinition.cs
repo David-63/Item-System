@@ -1,41 +1,37 @@
-#nullable enable
-
 using System.Collections.Generic;
 using Dave6.Foundation.Math;
 
 namespace Dave6.ItemSystem.Domain.Item
 {
-    // 아이템 카테고리
-    public enum ItemCategory
-    {
-        Armor,
-        Weapon,
-        Consumable,
-        Ammo,
-        Bag,
-        Mod,
-        Misc
-    }
-
     public class ItemDefinition
     {
+        #region Core
         public string ItemId { get;}
         public string DisplayName { get; }
         public ItemCategory ItemCategory { get; }
         public Int2 ItemSize { get; }
-        public ItemContainerConfig? ContainerConfig { get; }
-        readonly HashSet<SlotCategory> _EquipableSlots;
-        public IEnumerable<SlotCategory> EquipableSlots => _EquipableSlots;
+        #endregion
+        #region Equip condition
+        public IEnumerable<EquipDescriptor> EquipDescriptors { get; }
+        #endregion
+        #region Ownership
+        public IEnumerable<OwnershipDescriptor> OwnershipDescriptors { get; }
+        #endregion
+        #region Influence
+        public IEnumerable<ExtensionDescriptor> InfluenceDescriptors { get; }
+        #endregion
 
         public ItemDefinition(string itemId, string displayName, ItemCategory itemCategory, Int2 itemSize
-        , ItemContainerConfig? containerConfig, IEnumerable<SlotCategory>? equipableSlots)
+        , IEnumerable<EquipDescriptor> equipDescriptors, IEnumerable<OwnershipDescriptor> ownershipDescriptors, IEnumerable<ExtensionDescriptor> influenceDescriptors)
         {
             ItemId = itemId;
             DisplayName = displayName;
             ItemCategory = itemCategory;
             ItemSize = itemSize;
-            ContainerConfig = containerConfig;
-            _EquipableSlots = equipableSlots != null ? new HashSet<SlotCategory>(equipableSlots) : new HashSet<SlotCategory>();
+
+            EquipDescriptors = equipDescriptors;
+            OwnershipDescriptors = ownershipDescriptors;
+            InfluenceDescriptors = influenceDescriptors;
         }
     }
 }

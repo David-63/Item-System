@@ -1,7 +1,7 @@
 #nullable enable
 
 using System.Collections.Generic;
-using Dave6.Foundation.Math;
+using Dave6.ItemSystem.Application.Container;
 using Dave6.ItemSystem.Domain.Item;
 
 namespace Dave6.ItemSystem.Domain.Container
@@ -17,31 +17,41 @@ namespace Dave6.ItemSystem.Domain.Container
         public void SetOwner(ItemInstance? owner) => Owner = owner;
 
         public abstract ItemPlacement? GetPlacement(ItemInstance item);
-        public abstract bool CanAdd(ItemInstance item);
-        public virtual bool TryAdd(ItemInstance item)
+        public abstract ContainerResult CanAdd(ItemInstance item);
+        public virtual ContainerResult TryAdd(ItemInstance item)
         {
-            if (_Items.Contains(item)) return false;
+            if (_Items.Contains(item)) return ContainerResult.Fail(ContainerError.ItemExists);
             _Items.Add(item);
             item.Owner = this;
             _IsDirty = true;
-            return true;
+            return ContainerResult.Ok(null!);
         }
 
-        public abstract bool CanAdd(ItemInstance item, ItemPlacement context);
-        public virtual bool TryAdd(ItemInstance item, ItemPlacement context)
+        public abstract ContainerResult CanAdd(ItemInstance item, ItemPlacement context);
+        public virtual ContainerResult TryAdd(ItemInstance item, ItemPlacement context)
         {
             return TryAdd(item);
         }
-        public virtual bool TryRemove(ItemInstance item)
+        public virtual ContainerResult TryRemove(ItemInstance item)
         {
-            if (!_Items.Remove(item)) return false;
+            if (!_Items.Remove(item)) return ContainerResult.Fail(ContainerError.InvalidItem);
             item.Owner = null;
             _IsDirty = true;
-            return true;
+            return ContainerResult.Ok(null!);
         }
 
         protected bool _IsDirty = false;
         public bool IsDirty => _IsDirty;
         public void ClearDirty() => _IsDirty = false;
+
+        bool _IsExternal = false;
+
+        public bool IsExternal => _IsExternal;
+
+        protected virtual ContainerLayout _Layout { get; set; }
+
+        public ContainerLayout Layout => _Layout;
+
+        public void SetExternal(bool isExternal = true) => _IsExternal = isExternal;
     }
 }

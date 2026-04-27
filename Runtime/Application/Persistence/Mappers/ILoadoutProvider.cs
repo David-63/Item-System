@@ -12,7 +12,7 @@ namespace Dave6.ItemSystem.Application.Mapper
         LoadoutRootContext GetContext();
 
         ContainerResult Move(ItemInstance item, IItemContainer target, ItemPlacement placement);
-        ContainerResult Add(ItemInstance item, RootContainerRole role);
+        ContainerResult Add(ItemInstance item, ExtensionRole role);
         ContainerResult Add(ItemInstance item, IItemContainer target, ItemPlacement placement = null);
         ContainerResult Remove(ItemInstance item);
     }

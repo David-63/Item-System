@@ -9,19 +9,18 @@ using Dave6.ItemSystem.Domain.Item;
 namespace Dave6.ItemSystem.Application.Container
 {
     [Serializable]
-    public enum RootContainerRole
+    public enum ExtensionRole
     {
         Equipment,
         Inventory,
-        Loot,
     }
     [Serializable]
-    public class RootContainerDefinition
+    public class ContainerCollectionDefinition
     {
-        public RootContainerRole id;
-        public ContainerLayout type;
-        public Int2 gridSize;
-        public SocketLayout socketLayout;
-        public List<SlotCategory> allowedSlots  = new();
+        public ExtensionRole Id;
+        public ContainerLayout Type;
+        public Int2 GridSize;
+        public SocketLayout SocketLayout;
+        public List<SlotCategory> AllowedSlots  = new();
     }
 }

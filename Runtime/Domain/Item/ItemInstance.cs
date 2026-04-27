@@ -1,6 +1,8 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Dave6.ItemSystem.Domain.Container;
 
 namespace Dave6.ItemSystem.Domain.Item
@@ -9,28 +11,41 @@ namespace Dave6.ItemSystem.Domain.Item
     {
         public ItemDefinition Definition { get; }
         public IItemContainer? Owner { get; internal set; }
-        public IItemContainer? OwnedContainer { get; }
+
+        readonly List<IItemContainer> _Containers = new();
+        public IReadOnlyList<IItemContainer> Containers => _Containers;
+
+        public IEnumerable<IItemContainer> GetExternalContainers() => _Containers.Where(c => c.IsExternal == true);
 
         public ItemInstance(ItemDefinition definition)
         {
             Definition = definition ?? throw new ArgumentNullException(nameof(definition));
 
-            if (definition.ContainerConfig != null)
+            foreach(var descriptor in Definition.OwnershipDescriptors)
             {
-                OwnedContainer = CreateOwnedContainer(definition);
-                OwnedContainer.SetOwner(this);
+                var container = CreateContainer(descriptor);
+                _Containers.Add(container);
+            }
+            foreach(var descriptor in Definition.InfluenceDescriptors)
+            {
+                var container = CreateContainer(descriptor);
+                container.SetExternal();
+                _Containers.Add(container);
             }
         }
-        
-        IItemContainer CreateOwnedContainer(ItemDefinition def)
+        IItemContainer CreateContainer(ContainerDescriptor descriptor)
         {
-            return def.ContainerConfig switch
+            string containerName = Definition.DisplayName + " Container";
+
+            ItemContainerBase container = descriptor.Layout switch
             {
-                ItemGridConfig grid => new GridContainer(def.DisplayName + " Container", grid.GridSize),
-                ItemSocketConfig slot => new SocketContainer(def.DisplayName + " Container", slot.AllowedSlots, slot.SocketLayout),
-                null => throw new InvalidOperationException(),
-                _ => throw new InvalidOperationException()
+                ContainerLayout.Grid => new GridContainer(containerName, descriptor.GridSize),
+                ContainerLayout.Socket => new SocketContainer(containerName, descriptor.AllowedSlots, descriptor.SocketLayout),
+                _ => throw new InvalidOperationException($"Unsupported layout: {descriptor.Layout}"),
             };
+            container.SetOwner(this);
+
+            return container;
         }
     }
 }

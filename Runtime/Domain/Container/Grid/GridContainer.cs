@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using Dave6.Foundation.Math;
+using Dave6.ItemSystem.Application.Container;
 using Dave6.ItemSystem.Domain.Item;
 using UnityEngine;
 
@@ -9,6 +10,8 @@ namespace Dave6.ItemSystem.Domain.Container
 {
     public class GridContainer : ItemContainerBase
     {
+        protected override ContainerLayout _Layout => ContainerLayout.Grid;
+
         readonly Int2 _Size;
         readonly ItemInstance?[,] _Grid;
         readonly Dictionary<ItemInstance, GridPlacement> _Placements = new(); // 아이템별 배치정보 저장
@@ -23,32 +26,35 @@ namespace Dave6.ItemSystem.Domain.Container
         #region Grid API
         public Int2 GetGridSize() => _Size;
 
-        public override bool TryAdd(ItemInstance item)
+        public override ContainerResult TryAdd(ItemInstance item)
         {
-            if (item == null) return false;
-            if (_Items.Contains(item)) return false;
-            if (!TryFindAutoPlacement(item, out var placement)) return false;
+            if (item == null) return ContainerResult.Fail(ContainerError.InvalidItem);
+            if (_Items.Contains(item)) return ContainerResult.Fail(ContainerError.ItemExists);
+
+            var result = TryFindAutoPlacement(item, out var placement);
+            if (!result.Success) return result;
             return TryAdd(item, placement);
         }
-        public override bool TryAdd(ItemInstance item, ItemPlacement? context)
+        public override ContainerResult TryAdd(ItemInstance item, ItemPlacement? context)
         {
-            if (item == null) return false;
-            if (context is not GridPlacement gp) return false;
-            if (_Items.Contains(item)) return false;
+            if (item == null) return ContainerResult.Fail(ContainerError.InvalidItem);
+            if (context is not GridPlacement gp) return ContainerResult.Fail(ContainerError.InvalidPlacementType);
+            if (_Items.Contains(item)) return ContainerResult.Fail(ContainerError.ItemExists);
             // if (!CanAdd(item, context)) return false;
 
             var size = GetItemSize(item, gp.Rotated);
 
-            if (!IsAreaFree(gp.Position, size)) return false;
+            if (!IsAreaFree(gp.Position, size)) return ContainerResult.Fail(ContainerError.NoSpaceAvailable);
 
             // base 먼저 수행
-            if (!base.TryAdd(item)) return false;
+            var result = base.TryAdd(item);
+            if (!result.Success) return result;
 
             // grid 반영 및 내부 상태 업데이트
             FillGrid(item, gp.Position, size);
             _Placements[item] = gp;
 
-            return true;
+            return result;
         }
 
         /// <summary>
@@ -59,34 +65,36 @@ namespace Dave6.ItemSystem.Domain.Container
             if (_Placements.TryGetValue(item, out var placement)) return placement;
             return null;
         }
-        public override bool CanAdd(ItemInstance item)
+        public override ContainerResult CanAdd(ItemInstance item)
         {
-            if (item == null) return false;
-            if (_Items.Contains(item)) return false;
+            if (item == null) return ContainerResult.Fail(ContainerError.InvalidItem);
+            if (_Items.Contains(item)) return ContainerResult.Fail(ContainerError.ItemExists);
             return TryFindAutoPlacement(item, out var placement);
         }
-        public override bool CanAdd(ItemInstance item, ItemPlacement context)
+        public override ContainerResult CanAdd(ItemInstance item, ItemPlacement context)
         {
             if (context is not GridPlacement gp)
             {
                 Debug.Log("Grid Placement 타입 불일치");
-                return false;
+                return ContainerResult.Fail(ContainerError.InvalidPlacementType);
             }
             var size = GetItemSize(item, gp.Rotated);
-            return IsAreaFree(gp.Position, size);
+            if (IsAreaFree(gp.Position, size)) return ContainerResult.Ok(null!);
+            else return ContainerResult.Fail(ContainerError.NoSpaceAvailable);
         }
 
-        public override bool TryRemove(ItemInstance item)
+        public override ContainerResult TryRemove(ItemInstance item)
         {
-            if (!_Placements.TryGetValue(item, out var placement)) return false;
+            if (!_Placements.TryGetValue(item, out var placement)) return ContainerResult.Fail(ContainerError.InvalidItem);
 
-            if (!base.TryRemove(item)) return false;
+            var result = base.TryRemove(item);
+            if (!result.Success) return result;
 
             var size = GetItemSize(item, placement.Rotated);
             ClearGrid(placement.Position, size);
             _Placements.Remove(item);
 
-            return true;
+            return result;
         }
         // Debug
         public string GetDebugState()
@@ -120,15 +128,17 @@ namespace Dave6.ItemSystem.Domain.Container
         #endregion
         #region Inner Logic
         // Auto Placement
-        bool TryFindAutoPlacement(ItemInstance item, out GridPlacement? placement)
+        ContainerResult TryFindAutoPlacement(ItemInstance item, out GridPlacement? placement)
         {
-            if (TryFindPlacement(item, rotated:false, out placement)) return true;
-            if (TryFindPlacement(item, rotated:true, out placement)) return true;
+            var result = TryFindPlacement(item, rotated:false, out placement);
+            if (result.Success) return result;
+            result = TryFindPlacement(item, rotated:true, out placement);
+            if (result.Success) return result;
 
             placement = null;
-            return false;
+            return result;
         }
-        bool TryFindPlacement(ItemInstance item, bool rotated, out GridPlacement? placement)
+        ContainerResult TryFindPlacement(ItemInstance item, bool rotated, out GridPlacement? placement)
         {
             var size = GetItemSize(item, rotated);
             for (int y = 0; y < _Size.Y; y++)
@@ -138,10 +148,10 @@ namespace Dave6.ItemSystem.Domain.Container
                 if (!IsAreaFree(pos, size)) continue;
 
                 placement = new GridPlacement(pos, rotated);
-                return true;
+                return ContainerResult.Ok(null!);
             }
             placement = null;
-            return false;
+            return ContainerResult.Fail(ContainerError.NoSpaceAvailable);
         }
 
         // Grid Logic
