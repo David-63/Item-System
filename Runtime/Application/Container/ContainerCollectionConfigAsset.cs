@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Dave6.ItemSystem.Application.Container
 {
-    [CreateAssetMenu(fileName = "RootContainerConfigAsset", menuName = "DaveAssets/ItemSystem/RootContainerConfigAsset")]
+    [CreateAssetMenu(fileName = "RootContainerConfigAsset", menuName = "Dave6/ItemSystem/RootContainerConfigAsset")]
     public class ContainerCollectionConfigAsset : ScriptableObject
     {
         [SerializeField] List<ContainerCollectionDefinition> _RootCollections = new();
@@ -22,12 +22,12 @@ namespace Dave6.ItemSystem.Application.Container
                 IItemContainer baseContainer = def.Type switch
                 {
                     ContainerLayout.Grid => new GridContainer(def.Id.ToString(), def.GridSize),
-                    ContainerLayout.Socket => new SocketContainer(def.Id.ToString(), def.AllowedSlots, def.SocketLayout),
+                    ContainerLayout.Socket => new SocketContainer(def.Id.ToString(), def.SocketConfig),
                     _ => throw new InvalidOperationException($"Unsupported layout: {def.Type}"),
                 };
 
                 // collection 생성
-                var collection = new ContainerCollection(baseContainer);
+                var collection = new ContainerCollection(baseContainer, def.Id);
                 collections.Add(def.Id, collection);
             }
 

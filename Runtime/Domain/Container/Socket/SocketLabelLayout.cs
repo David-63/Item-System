@@ -3,7 +3,7 @@ using System;
 namespace Dave6.ItemSystem.Domain.Container
 {
     [Serializable]
-    public enum SocketLayout
+    public enum SocketLabelLayout
     {
         LabelRow,      // label + slot
         LabelAbove,

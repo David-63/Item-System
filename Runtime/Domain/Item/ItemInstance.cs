@@ -40,7 +40,7 @@ namespace Dave6.ItemSystem.Domain.Item
             ItemContainerBase container = descriptor.Layout switch
             {
                 ContainerLayout.Grid => new GridContainer(containerName, descriptor.GridSize),
-                ContainerLayout.Socket => new SocketContainer(containerName, descriptor.AllowedSlots, descriptor.SocketLayout),
+                ContainerLayout.Socket => new SocketContainer(containerName, descriptor.SocketConfig),
                 _ => throw new InvalidOperationException($"Unsupported layout: {descriptor.Layout}"),
             };
             container.SetOwner(this);

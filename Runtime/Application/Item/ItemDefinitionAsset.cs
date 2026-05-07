@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Dave6.ItemSystem.Application.Item
 {
-    [CreateAssetMenu(fileName = "ItemDefinitionAsset", menuName = "DaveAssets/ItemSystem/ItemDefinitionAsset")]
+    [CreateAssetMenu(fileName = "ItemDefinitionAsset", menuName = "Dave6/ItemSystem/ItemDefinitionAsset")]
     public class ItemDefinitionAsset : ScriptableObject
     {
         [Header("Core Identification")]

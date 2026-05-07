@@ -12,7 +12,10 @@ namespace Dave6.ItemSystem.Application.Container
         ContainerLayout _Layout;
         IItemContainer _BaseContainer;
         List<IItemContainer> _OrderedExtensions = new();
+        Dictionary<IItemContainer, ItemInstance> _ContainerSource = new();
         Dictionary<ItemInstance, List<IItemContainer>> _ExtensionsBySource = new();
+        public ExtensionRole Role {get;private set;}
+
         public IEnumerable<IItemContainer> AllContainers
         {
             get
@@ -27,10 +30,11 @@ namespace Dave6.ItemSystem.Application.Container
         public event Action<IItemContainer, ContainerCollection> OnContainerAdded;
         public event Action<IItemContainer, ContainerCollection> OnContainerRemoved;
 
-        public ContainerCollection(IItemContainer container)
+        public ContainerCollection(IItemContainer container, ExtensionRole role)
         {
             _BaseContainer = container;
             _Layout = container.Layout;
+            Role = role;
         }
 
         public void AddExtension(ItemInstance ext)
@@ -42,6 +46,7 @@ namespace Dave6.ItemSystem.Application.Container
             foreach (var container in externals)
             {
                 _OrderedExtensions.Add(container);
+                _ContainerSource[container] = ext;
                 OnContainerAdded?.Invoke(container, this);
             }
         }
@@ -52,10 +57,16 @@ namespace Dave6.ItemSystem.Application.Container
             foreach (var container in containers)
             {
                 _OrderedExtensions.Remove(container);
+                _ContainerSource.Remove(container);
                 OnContainerRemoved?.Invoke(container, this);
             }
 
             _ExtensionsBySource.Remove(ext);
+        }
+
+        public ItemInstance GetSource(IItemContainer container)
+        {
+            return _ContainerSource.TryGetValue(container, out var source) ? source : null;
         }
     }
 }

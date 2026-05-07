@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Dave6.ItemSystem.Domain.Container;
 using Dave6.ItemSystem.Domain.Item;
+using UnityEngine;
 
 namespace Dave6.ItemSystem.Application.Container
 {
@@ -14,7 +15,7 @@ namespace Dave6.ItemSystem.Application.Container
         Dictionary<IItemContainer, ContainerCollection> _ContainerToCollection = new();
         #region UI 전용 이벤트
         public event Action<ItemInstance, IItemContainer> OnItemAdded;
-        public event Action<ItemInstance> OnItemRemoved;
+        public event Action<ItemInstance, IItemContainer> OnItemRemoved;
         public event Action<ItemInstance, IItemContainer> OnItemMoved;
         #endregion
 
@@ -101,30 +102,25 @@ namespace Dave6.ItemSystem.Application.Container
         }
         #endregion
 
-        #region 상호작용 API
-        public void AddExtension(ItemInstance ext)
-        {
-            
-        }
-        public void RemoveExtension(ItemInstance ext)
-        {
-            
-        }
-        #endregion
-
         #region 외부에서 직접 호출 못하게 internal or public but convention으로 막기
         /// <summary>
         /// UI 생성 이벤트
         /// </summary>
-        public void NotifyItemAdded(ItemInstance item, IItemContainer container) => OnItemAdded?.Invoke(item, container);
+        public void NotifyItemAdded(ItemInstance item, IItemContainer container)
+        {
+            OnItemAdded?.Invoke(item, container);
+        }
         /// <summary>
         /// UI 제거 이벤트
         /// </summary>
-        public void NotifyItemRemoved(ItemInstance item) => OnItemRemoved?.Invoke(item);
+        public void NotifyItemRemoved(ItemInstance item, IItemContainer container) => OnItemRemoved?.Invoke(item, container);
         /// <summary>
         /// UI 갱신 이벤트
         /// </summary>
-        public void NotifyItemMoved(ItemInstance item, IItemContainer container) => OnItemMoved?.Invoke(item, container);
+        public void NotifyItemMoved(ItemInstance item, IItemContainer container)
+        {
+            OnItemMoved?.Invoke(item, container);
+        }
         #endregion
     }
 }

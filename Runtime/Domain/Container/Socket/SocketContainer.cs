@@ -12,16 +12,18 @@ namespace Dave6.ItemSystem.Domain.Container
 
         readonly List<SocketSlot> _SocketSlots = new();                                    // 슬롯 상태
         public IReadOnlyList<SocketSlot> SocketSlots => _SocketSlots;
-        public SocketLayout SocketLayout { get; }
+        public SocketLabelLayout SocketLabelLayout { get; }
+        public SocketFlowLayout SocketFlowLayout { get; }
 
-        public SocketContainer(string containerName, IEnumerable<SlotCategory> slotCategories, SocketLayout socketLayout = SocketLayout.LabelAbove)
+        public SocketContainer(string containerName, SocketLayoutConfig config)//IEnumerable<SlotCategory> slotCategories, SocketLabelLayout socketLayout = SocketLabelLayout.LabelAbove)
         {
             ContainerName = containerName;
-            SocketLayout = socketLayout;
+            SocketLabelLayout = config.Label;
+            SocketFlowLayout = config.Flow;
 
             int localId = 0;
 
-            foreach (var type in slotCategories)
+            foreach (var type in config.AllowedSlots)
             {
                 _SocketSlots.Add(new SocketSlot(type, localId++));
             }

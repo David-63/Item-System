@@ -1,6 +1,5 @@
 #nullable enable
 
-using System.Linq;
 using Dave6.ItemSystem.Domain.Item;
 
 namespace Dave6.ItemSystem.Domain.Container

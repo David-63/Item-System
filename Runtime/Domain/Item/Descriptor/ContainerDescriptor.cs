@@ -12,8 +12,9 @@ namespace Dave6.ItemSystem.Domain.Item
         public ContainerLayout Layout;
         // shape / rule
         public Int2 GridSize;
-        public List<SlotCategory> AllowedSlots;
-        public SocketLayout SocketLayout;
+        public SocketLayoutConfig SocketConfig;
+        // public List<SlotCategory> AllowedSlots;
+        // public SocketLabelLayout SocketLayout;
     }
 
     [Serializable]
