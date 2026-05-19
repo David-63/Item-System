@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Dave6.ItemSystem.Domain.Container;
 using Dave6.ItemSystem.Domain.Item;
-using UnityEngine;
 
 namespace Dave6.ItemSystem.Application.Container
 {
@@ -14,9 +13,8 @@ namespace Dave6.ItemSystem.Application.Container
         Dictionary<ExtensionRole, ContainerCollection> _RootCollections = new();
         Dictionary<IItemContainer, ContainerCollection> _ContainerToCollection = new();
         #region UI 전용 이벤트
-        public event Action<ItemInstance, IItemContainer> OnItemAdded;
-        public event Action<ItemInstance, IItemContainer> OnItemRemoved;
-        public event Action<ItemInstance, IItemContainer> OnItemMoved;
+        public event Action<ItemInstance, ContainerResult> OnItemChanged;
+        public event Action<IEnumerable<ItemInstance>> OnItemsInvalidated;
         #endregion
 
         public LoadoutRootContext(Dictionary<ExtensionRole, ContainerCollection> collections)
@@ -100,27 +98,64 @@ namespace Dave6.ItemSystem.Application.Container
                 }
             }
         }
+        public bool IsEquipped(ItemInstance item)
+        {
+            var target = item;
+            while (true)
+            {
+                var owner = target.Owner;
+                if (owner == null) return false;
+
+                var parentItem = owner.Owner;
+                if (parentItem == null)
+                {
+                    var collection = _ContainerToCollection[owner];
+                    var role = GetRole(collection);
+                    return role == ExtensionRole.Equipment;
+                }
+
+                target = parentItem;
+            }
+        }
+        public bool IsEquipped(IItemContainer container)
+        {
+            var target = container.Owner;
+            while (true)
+            {
+                var owner = target.Owner;
+                if (owner == null) return false;
+
+                var parentItem = owner.Owner;
+                if (parentItem == null)
+                {
+                    var collection = _ContainerToCollection[owner];
+                    var role = GetRole(collection);
+                    return role == ExtensionRole.Equipment;
+                }
+
+                target = parentItem;
+            }
+        }
+        public bool WasEquipped(ContainerAction action)
+        {
+            var owner = action.From;
+            while (owner != null)
+            {
+                var collection = _ContainerToCollection[owner];
+                var role = GetRole(collection);
+                if (role == ExtensionRole.Equipment) return true;
+
+                var parentItem = owner.Owner;
+                if (parentItem == null) break;
+                owner = parentItem.Owner;
+            }
+            return false;
+        }
         #endregion
 
-        #region 외부에서 직접 호출 못하게 internal or public but convention으로 막기
-        /// <summary>
-        /// UI 생성 이벤트
-        /// </summary>
-        public void NotifyItemAdded(ItemInstance item, IItemContainer container)
-        {
-            OnItemAdded?.Invoke(item, container);
-        }
-        /// <summary>
-        /// UI 제거 이벤트
-        /// </summary>
-        public void NotifyItemRemoved(ItemInstance item, IItemContainer container) => OnItemRemoved?.Invoke(item, container);
-        /// <summary>
-        /// UI 갱신 이벤트
-        /// </summary>
-        public void NotifyItemMoved(ItemInstance item, IItemContainer container)
-        {
-            OnItemMoved?.Invoke(item, container);
-        }
+        #region 이벤트 바인딩 전용 API
+        public void NotifyItemsInvalidated(IEnumerable<ItemInstance> items) => OnItemsInvalidated?.Invoke(items);
+        public void NotifyItemChanged(ItemInstance item, ContainerResult result) => OnItemChanged?.Invoke(item, result);
         #endregion
     }
 }

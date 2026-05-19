@@ -18,5 +18,4 @@ namespace Dave6.ItemSystem.Application.Container
         public IItemContainer To;
         public ItemPlacement Placement;
     }
-
 }

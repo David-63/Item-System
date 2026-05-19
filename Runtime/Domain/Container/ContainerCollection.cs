@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Dave6.ItemSystem.Domain.Container;
 using Dave6.ItemSystem.Domain.Item;
-using UnityEngine;
 
-namespace Dave6.ItemSystem.Application.Container
+namespace Dave6.ItemSystem.Domain.Container
 {
     public class ContainerCollection
     {
@@ -35,29 +33,49 @@ namespace Dave6.ItemSystem.Application.Container
             _BaseContainer = container;
             _Layout = container.Layout;
             Role = role;
+            if (container is ItemContainerBase baseContainer)
+            {
+                baseContainer.SetCollection(this);
+            }
         }
 
-        public void AddExtension(ItemInstance ext)
+        public IEnumerable<ItemInstance> AttachExtension(ItemInstance ext)
         {
             var externals = ext.GetExternalContainers().Where(c => c.Layout == _Layout).ToList();
-            if (externals.Count == 0) return;
+            if (externals.Count == 0) yield break;
 
             _ExtensionsBySource[ext] = externals;
             foreach (var container in externals)
             {
+                foreach (var item in container.Items)
+                {
+                    yield return item;
+                }
                 _OrderedExtensions.Add(container);
                 _ContainerSource[container] = ext;
+                if (container is ItemContainerBase baseContainer)
+                {
+                    baseContainer.SetCollection(this);
+                }
                 OnContainerAdded?.Invoke(container, this);
             }
         }
-        public void RemoveExtension(ItemInstance ext)
+        public IEnumerable<ItemInstance> DetachExtension(ItemInstance ext)
         {
-            if (!_ExtensionsBySource.TryGetValue(ext, out var containers)) return;
+            if (!_ExtensionsBySource.TryGetValue(ext, out var containers)) yield break;
 
             foreach (var container in containers)
             {
+                foreach (var item in container.Items)
+                {
+                    yield return item;
+                }
                 _OrderedExtensions.Remove(container);
                 _ContainerSource.Remove(container);
+                if (container is ItemContainerBase baseContainer)
+                {
+                    baseContainer.SetCollection(null);
+                }
                 OnContainerRemoved?.Invoke(container, this);
             }
 

@@ -16,12 +16,18 @@ namespace Dave6.ItemSystem.Domain.Item
         // public List<SlotCategory> AllowedSlots;
         // public SocketLabelLayout SocketLayout;
     }
-
+    
+    /// <summary>
+    /// 이 아이템이 직접 소유하는 컨테이너
+    /// </summary>
     [Serializable]
     public class OwnershipDescriptor : ContainerDescriptor
     {
         // identity (아직 필요없음)
     }
+    /// <summary>
+    /// 아이템이 loadout 구조에 영향을 주는 extension
+    /// </summary>
     [Serializable]
     public class ExtensionDescriptor : ContainerDescriptor
     {
@@ -30,6 +36,9 @@ namespace Dave6.ItemSystem.Domain.Item
 
         // source identity
     }
+    /// <summary>
+    /// 어디에 장착 가능하는가
+    /// </summary>
     [Serializable]
     public class EquipDescriptor
     {

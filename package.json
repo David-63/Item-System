@@ -1,8 +1,8 @@
 {
   "name": "com.dave6.item-system",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "displayName": "Dave Item System",
-  "description": "\uc544\uc774\ud15c \uae30\ub2a5.",
+  "description": "아이템 기능 제공.",
   "unity": "6000.0",
   "unityRelease": "0",
   "documentationUrl": "https://github.com/David-63/com.dave6.item-system#readme",

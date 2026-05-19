@@ -18,7 +18,7 @@ namespace Dave6.ItemSystem.Application.Container
 
             foreach (var def in _RootCollections)
             {
-                // base 생ㅇ성
+                // base 생성
                 IItemContainer baseContainer = def.Type switch
                 {
                     ContainerLayout.Grid => new GridContainer(def.Id.ToString(), def.GridSize),

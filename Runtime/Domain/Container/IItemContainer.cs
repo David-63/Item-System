@@ -10,6 +10,7 @@ namespace Dave6.ItemSystem.Domain.Container
     {
         string? ContainerName { get; }
         ItemInstance? Owner { get; }                 // 트리 구조 가능
+        ContainerCollection? CurrentCollection { get; }
         ContainerLayout Layout { get; }
         IReadOnlyCollection<ItemInstance> Items { get; }
         bool IsExternal { get; }

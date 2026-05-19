@@ -1,7 +1,6 @@
 using System;
 using Dave6.ItemSystem.Domain.Container;
 using Dave6.ItemSystem.Domain.Item;
-using UnityEngine;
 
 namespace Dave6.ItemSystem.Application.Container
 {
@@ -65,10 +64,7 @@ namespace Dave6.ItemSystem.Application.Container
             // 모든 후보 순회
             foreach (var container in collection.AllContainers)
             {
-                Debug.Log($"Try Container: {container}");
-
                 var canAdd = container.CanAdd(item);
-                Debug.Log($"CanAdd: {canAdd.Success} / {canAdd.Error}");
                 if (!canAdd.Success) continue;
 
                 // 성공시 기존로직 재사용

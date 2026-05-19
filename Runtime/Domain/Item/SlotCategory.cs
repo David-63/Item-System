@@ -9,7 +9,8 @@ namespace Dave6.ItemSystem.Domain.Item
         Weapon,
         Storage,
 
-        // Weapon Attachment
+        // Attachments
+        ModuleNode,
         Muzzle,
         Sight,
         Magazine,

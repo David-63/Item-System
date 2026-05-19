@@ -9,12 +9,16 @@ namespace Dave6.ItemSystem.Domain.Container
     public abstract class ItemContainerBase : IItemContainer
     {
         public string? ContainerName { get; protected set; }
+        public ContainerCollection? CurrentCollection { get; protected set; }
+
         protected readonly List<ItemInstance> _Items = new();
         public IReadOnlyCollection<ItemInstance> Items => _Items;
 
 
         public ItemInstance? Owner { get; protected set; }
         public void SetOwner(ItemInstance? owner) => Owner = owner;
+        public void SetCollection(ContainerCollection collection) => CurrentCollection = collection;
+        
 
         public abstract ItemPlacement? GetPlacement(ItemInstance item);
         public abstract ContainerResult CanAdd(ItemInstance item);
